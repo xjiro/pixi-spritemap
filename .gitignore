@@ -1,0 +1,7 @@
+input
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.json
+__pycache__
