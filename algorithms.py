@@ -1,38 +1,42 @@
 import math
 from PIL import Image
 
-import rectpack
+import greedypacker
 
-def rppacker(sprites):
-    packer = rectpack.newPacker(mode=rectpack.PackingMode.Offline,
-                                rotation=True)
-
-    for s in sprites:
-        packer.add_rect(s.width, s.height, s.filename)
+def gpacker(sprites, algorithm='maximal_rectangle'):
 
     width = sum([s.width for s in sprites])
     height = sum([s.height for s in sprites])
-    side = math.ceil(math.sqrt(1.2 * sum([s.width * s.height for s in sprites])).real)
 
-    packer.add_bin(side, side)
+    # side = math.ceil(math.sqrt(1.2 * sum([s.width * s.height for s in sprites])).real)
 
-    packer.pack()
+    heuristics = {'shelf': 'best_area_fit',
+                  'guillotine': 'best_area',
+                  'maximal_rectangle': 'best_longside',
+                  'skyline': 'best_fit'}
 
-    all_rects = packer.rect_list()
+
+    packer = greedypacker.BinManager(width, height, pack_algo=algorithm, heuristic=heuristics.get(algorithm), wastemap=False, rotation=True)
+
+    sprite_items = []
+    for s in sprites:
+        item = greedypacker.Item(s.width, s.height)
+        item.id = s.filename
+        sprite_items.append(item)
+
+    packer.add_items(*sprite_items)
+
+    packer.execute()
 
     img = Image.new(mode="RGBA", size=(width, height))
 
-    print(all_rects)
+    for i in packer.bins[0].items:
+        sprite = [s for s in sprites if s.filename == i.id][0]
 
-    for rect in all_rects:
-        b, x, y, w, h, rid = rect
-        sprite = [s for s in sprites if s.filename == rid][0]
+        if i.width != i.height and i.width != sprite.width:
+            sprite = sprite.rotate(90, expand=True)
 
-        if w != h and w == s.height:
-            sprite.rotate(90)
-
-        # print(b, x, y, w, h, rid)
-        img.paste(sprite, (x, y,))
+        img.paste(sprite, (i.x, i.y,))
 
     img = img.crop(img.getbbox())
 

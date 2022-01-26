@@ -23,13 +23,13 @@ parser.add_argument('-v',
                     help="Verbose Debug Output",
                     action="store_true",
                     default=False)
-
+                    
 parser.add_argument('-a',
                     '--algorithm',
                     default='rectpack',
                     const='rectpack',
                     nargs='?',
-                    choices=['simple', 'rectpack'],
+                    choices=['simple', 'shelf', 'guillotine', 'maximal_rectangle', 'skyline'],
                     help='Algorithm for sprite orientation and placement')
 
 parser.add_argument('-i',
@@ -62,12 +62,9 @@ sprites = [Image.open(f) for f in sprites]
 
 verbose('SPRITES:',pprint.pformat([x.filename for x in sprites]))
 
-if opts.algorithm == 'simple':
-    img = algorithms.simple(sprites)
-else:
-    img = algorithms.rppacker(sprites)
+img = algorithms.gpacker(sprites, algorithm=opts.algorithm)
 
-img.save(opts.output+'.png', format="png")
+img.save(opts.output+'.png', format='png')
 
 
 # commonpath = os.path.commonpath(opts.output)
