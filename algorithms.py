@@ -1,60 +1,31 @@
 import math
 from PIL import Image
 
-import greedypacker
+import rpack
 
-def gpacker(sprites, algorithm='maximal_rectangle'):
+def rpacker(sprites):
 
-    width = sum([s.width for s in sprites])
-    height = sum([s.height for s in sprites])
+    sizes = [(s.width, s.height,) for s in sprites]
+    
+    pos = rpack.pack(sizes)
 
-    # side = math.ceil(math.sqrt(1.2 * sum([s.width * s.height for s in sprites])).real)
+    print("Packed Density: ", int(rpack.packing_density(sizes, pos)*100), '%')
 
-    heuristics = {'shelf': 'best_area_fit',
-                  'guillotine': 'best_area',
-                  'maximal_rectangle': 'best_longside',
-                  'skyline': 'best_fit'}
+    img = Image.new(mode="RGBA", size=rpack.bbox_size(sizes, pos))
 
-
-    packer = greedypacker.BinManager(width, height, pack_algo=algorithm, heuristic=heuristics.get(algorithm), wastemap=False, rotation=True)
-
-    sprite_items = []
-    for s in sprites:
-        item = greedypacker.Item(s.width, s.height)
-        item.id = s.filename
-        sprite_items.append(item)
-
-    packer.add_items(*sprite_items)
-
-    packer.execute()
-
-    img = Image.new(mode="RGBA", size=(width, height))
-
-    for i in packer.bins[0].items:
-        sprite = [s for s in sprites if s.filename == i.id][0]
-
-        if i.width != i.height and i.width != sprite.width:
-            sprite = sprite.rotate(90, expand=True)
-
-        img.paste(sprite, (i.x, i.y,))
+    for i, s in enumerate(sprites):
+        # if i.width != i.height and i.width != sprite.width:
+        #     sprite = sprite.rotate(90, expand=True)
+        img.paste(s, (pos[i][0], pos[i][1],))
 
     img = img.crop(img.getbbox())
 
-    # x, y = 0, 0
-    # for row in grid:
-    #     for subimg in row:
-    #         img.paste(subimg, (x, y,))
-    #         x += subimg.width
-
-    #     y += max([subimg.height for subimg in row])
-    #     x = 0
-    
-    return img
+    return img, sizes, pos
 
 
 def simple(sprites):
     num = len(sprites)
-    num_w = math.ceil(sqrt(num).real)
+    num_w = math.ceil(math.sqrt(num).real)
 
     sprites = sorted(sprites, key=lambda x: x.width)
 
