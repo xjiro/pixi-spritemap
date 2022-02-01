@@ -64,11 +64,11 @@ sprites_index = {"frames": {os.path.relpath(s.filename, commonpath).replace(os.s
                                          "trimmed": False,
                                          "spriteSourceSize": {"x": 0, "y": 0, "w": s.width, "h": s.height},
                                          "sourceSize": {"w": s.width, "h": s.height}} for i, s in enumerate(sprites)},
-                 "meta": {"app": "https://github.com/xjiro/spritemap-json",
+                 "meta": {"app": "https://github.com/xjiro/pixi-spritemap",
                           "version": "1.0",
-                          "image": "diasteroids.png",
+                          "image": os.path.basename(opts.output)+'.png',
                           "format": "RGBA8888",
-                          "size": {"w": 1600, "h": 1600},
+                          "size": {"w": img.width, "h": img.height},
                           "scale": "1",
                           }}
 
